@@ -1,0 +1,12 @@
+# order demostration
+#   0     1
+#
+# 2   / \   3
+#      |
+# 4    |    5
+#
+#   6     7
+order: [0, 1, 2, 3, 4, 5, 6, 7]                                 # order of detector 
+field_of_view_radian: [0.52, 0.52, 0.52, 0.52, 0.52, 0.52, 0.52, 0.52] # radians
+min_range_m: [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2]             # m
+max_range_m: [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]             # m
