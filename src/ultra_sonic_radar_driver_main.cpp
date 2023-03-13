@@ -1,22 +1,23 @@
 /**
  * @file ultra_sonic_radar_driver_main.cpp
- * @author Mark Jin (mark@pixmoving.net)
- * @brief 
- * @version 0.9
- * @date 2022-12-01
+ * @author zumoude (zymouse@pixmoving.net)
+ * @brief ultra sonic radar driver 
+ * @version 1.0
+ * @date 2023-03-08
  * 
  * @copyright Copyright (c) 2022, Pixmoving
  * Rebuild The City With Autonomous Mobility
  * https://www.pixmoving.com
  * 
  */
-#include <ultra_sonic_radar_driver/ultra_sonic_radar_driver.hpp>
+#include "ultra_sonic_radar_driver/ultra_sonic_radar_driver.hpp"
+
 
 int main(int argc, char * argv[])
 {
-    ros::init(argc, argv, "ultra_sonic_radar_driver_node");
-    ultra_sonic_radar_driver::UltraSonicRadarDriver ultra_sonic_radar_driver;
-    ros::spin();
-
+    rclcpp::init(argc, argv);
+    auto node=std::make_shared<ultra_sonic_radar_driver::UltraSonicRadarDriver>("ultra_sonic_radar_driver_node");
+    rclcpp::spin(node);
+    rclcpp::shutdown();
     return 0;
 }

@@ -1,63 +1,29 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.8)
 project(ultra_sonic_radar_driver)
 
-find_package(catkin REQUIRED COMPONENTS
-  can_msgs
-  roscpp
-  std_msgs
-  sensor_msgs
-)
+# find dependencies
+find_package(ament_cmake_auto REQUIRED)
+ament_auto_find_build_dependencies()
 
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES pix_driver
-  CATKIN_DEPENDS can_msgs roscpp std_msgs sensor_msgs
-)
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_EXTENSIONS OFF)
+endif()
 
-include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-)
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
 
-# # Declare a C++ library
-add_library(${PROJECT_NAME}
+ament_auto_add_executable(ultra_sonic_radar_driver_node
   src/ultra_sonic_radar_driver.cpp
-)
-
-add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-target_link_libraries(${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-)
-
-# src/steering_command_102.cc
-# src/{name}.cc
-add_executable(${PROJECT_NAME}_node
   src/ultra_sonic_radar_driver_main.cpp
 )
 
-add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-target_link_libraries(${PROJECT_NAME}_node
-  ${catkin_LIBRARIES}
-  ${PROJECT_NAME}
-)
-
-catkin_install_python(PROGRAMS scripts/fake_radar_publisher.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-
-# catkin_install_python(PROGRAMS
-# DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
-install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-
-install(DIRECTORY
+# install
+ament_auto_package(
+  INSTALL_TO_SHARE
   launch
   config
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )

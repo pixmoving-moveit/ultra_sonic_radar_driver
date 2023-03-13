@@ -1,163 +1,187 @@
 /**
  * @file ultra_sonic_radar_driver.cpp
- * @author Mark Jin (mark@pixmoving.net)
- * @brief ultra sonic radar ros driver for CM radars
- * @version 0.9
- * @date 2022-11-30
+ * @author zumoude (zymouse@pixmoving.net)
+ * @brief ultra sonic radar driver 
+ * @version 1.0
+ * @date 2023-03-08
  * 
  * @copyright Copyright (c) 2022, Pixmoving
  * Rebuild The City With Autonomous Mobility
  * https://www.pixmoving.com
  * 
  */
-
-
-#include "ultra_sonic_radar_driver/ultra_sonic_radar_driver.hpp"
+#include <ultra_sonic_radar_driver/ultra_sonic_radar_driver.hpp>
 
 namespace ultra_sonic_radar_driver
 {
-
-int dec2hex(uint8_t dec)
-{
-    int temp;
-    int na[2];
-    if(dec<=10)
+    int dec2hex(uint8_t dec)
     {
-        return dec;
-    }
-    for(int i=0;i<2;i++)
-    {
-        if(dec<16)
+        int temp;
+        int na[2];
+        if(dec<=10)
         {
-            na[i] = dec;
-            dec = dec / 16;
+            return dec;
         }
-        else{
-            temp = dec / 16;
-            dec = dec % 16;
-            na[i] = temp;
+        for(int i=0;i<2;i++)
+        {
+            if(dec<16)
+            {
+                na[i] = dec;
+                dec = dec / 16;
+            }
+            else{
+                temp = dec / 16;
+                dec = dec % 16;
+                na[i] = temp;
+            }
+        }
+        return na[0]*10 + na[1]; 
+    }
+    void UltraSonicRadarData::setRange(const size_t &id, const float &range, const rclcpp::Time stamp,
+        const float &field_of_view_radian, const float &min_range_m, const float &max_range_m)
+    {
+        Range range_msg;
+        range_msg.header.frame_id = "ultrasonic_" + std::to_string(id);
+        range_msg.header.stamp = stamp;
+        range_msg.field_of_view = field_of_view_radian;
+        range_msg.max_range = max_range_m;
+        range_msg.min_range = min_range_m;
+        range_msg.range = range;
+        range_msg.radiation_type = Range::ULTRASOUND;
+        RangeSharedPtr range_ptr = std::make_shared<Range>(range_msg);
+        
+        sensor_data_ptr_.at(id) = range_ptr;
+    }
+
+    UltraSonicRadarDriver::UltraSonicRadarDriver(std::string name):Node(name)
+    {
+        // ROS2 get parameters
+        auto order = declare_parameter(
+            "order", std::vector<int>{
+                0, 1, 2, 3, 4, 5, 6, 7});
+        std::vector<int> order_v(order.begin(), order.end());
+        param_.order = order_v;
+
+        auto field_of_view_radian = declare_parameter(
+            "field_of_view_radian", std::vector<double>{
+                0.52, 0.52, 0.52, 0.52, 0.52, 0.52, 0.52, 0.52});
+        std::vector<double> field_of_view_radian_v(field_of_view_radian.begin(), field_of_view_radian.end());
+        param_.field_of_view_radian = field_of_view_radian_v;
+
+        auto min_range_m = declare_parameter(
+            "min_range_m", std::vector<double>{
+                0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2});
+        std::vector<double> min_range_m_v(min_range_m.begin(), min_range_m.end());
+        param_.min_range_m  = min_range_m_v;
+
+        auto max_range_m = declare_parameter(
+            "max_range_m", std::vector<double>{
+                2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0});
+        std::vector<double> max_range_m_v(max_range_m.begin(), max_range_m.end());
+        param_.max_range_m = max_range_m_v;
+
+        // ros2 publisher
+        can_frame_pub_ = this->create_publisher<can_msgs::msg::Frame>(
+            "/output/can_frame", 1);
+
+        for(int i=0; i<8; i++){
+            rclcpp::Publisher<Range>::SharedPtr ultra_sonic_range_pub;
+            ultra_sonic_range_pub = this->create_publisher<Range>("/output/ultra_sonic_radar_"+std::to_string(i), 1);
+            ultra_sonic_range_pub_vector_.push_back(ultra_sonic_range_pub);
+            ultra_sonic_radar_data_.sensor_data_ptr_.push_back(RangeSharedPtr());
+        }
+
+        // ros2 sublisher
+        activate_radar_sub_ = this->create_subscription<std_msgs::msg::Bool>(
+            "/input/activate_radar", 1, std::bind(&UltraSonicRadarDriver::activateRadarCallback, this, std::placeholders::_1));
+
+        can_frame_sub_ = this->create_subscription<can_msgs::msg::Frame>(
+            "/input/can_frame", 1, std::bind(&UltraSonicRadarDriver::canFrameCallback, this, std::placeholders::_1)
+        );
+
+        // ros2 Timer 10hz
+        timer_ = this->create_wall_timer(
+            std::chrono::milliseconds(500), std::bind(&UltraSonicRadarDriver::timerCallback, this));
+
+        // activate
+        is_radar_activated_ = false;
+        is_received_radar_data_ = false;
+
+        // init time source
+        current_stamped_ = this->now();
+        prev_stamped_ = this->now();
+    }
+
+    UltraSonicRadarDriver::~UltraSonicRadarDriver()
+    {
+    }
+
+    void UltraSonicRadarDriver::resetRadarData()
+    {
+        for (int i = 0; i < 8;i++)
+        {
+            ultra_sonic_radar_data_.setRange(
+                param_.order.at(i), 1000.0, this->now(),
+                param_.field_of_view_radian.at(param_.order.at(i)), param_.min_range_m.at(param_.order.at(i)),
+                param_.max_range_m.at(param_.order.at(i)));
+        }
+        publishData();
+
+    }
+
+    void UltraSonicRadarDriver::activateRadarCallback(const std_msgs::msg::Bool::ConstSharedPtr &msg)
+    {
+        if(msg->data)
+        {
+            activateRadar();
+            RCLCPP_INFO(this->get_logger(), "ACTIVATING ULTRASONIC RADAR");
+        }else{
+            deactivateRadar();
+            RCLCPP_INFO(this->get_logger(), "DEACTIVATING ULTRASONIC RADAR");
+        }
+
+    }
+    void UltraSonicRadarDriver::activateRadar()
+    {
+        can_msgs::msg::Frame activate_message;
+        activate_message.header.stamp = this->now();
+        activate_message.dlc = 3;
+        activate_message.id = 0x601;
+        activate_message.data[0] = 0xb7;
+        activate_message.data[1] = 0x10;
+        activate_message.data[2] = 0xff;
+        can_frame_pub_->publish(activate_message);
+        is_radar_activated_ = true;
+        RCLCPP_INFO(this->get_logger(), "RADAR ACTIVATED");
+    }
+    void UltraSonicRadarDriver::deactivateRadar()
+    {
+        can_msgs::msg::Frame deactivate_message;
+        deactivate_message.header.stamp = this->now();
+        deactivate_message.dlc = 3;
+        deactivate_message.id = 0x601;
+        deactivate_message.data[0] = 0xb7;
+        deactivate_message.data[1] = 0x10;
+        deactivate_message.data[2] = 0x00;
+        can_frame_pub_->publish(deactivate_message);
+        is_radar_activated_ = false;
+        resetRadarData();
+        RCLCPP_INFO(this->get_logger(), "RADAR DEACTIVATED");
+    }
+    
+    void UltraSonicRadarDriver::publishData()
+    {
+        for (int i=0;i<8;i++)
+        {   
+            ultra_sonic_range_pub_vector_.at(i)->publish(*ultra_sonic_radar_data_.sensor_data_ptr_.at(i));
         }
     }
-    return na[0]*10 + na[1]; 
-}
 
-void UltraSonicRadarData::setRange(const size_t &id, const float &range, const ros::Time stamp,
-    const float &field_of_view_radian, const float &min_range_m, const float &max_range_m)
-{
-    Range range_msg;
-    range_msg.header.frame_id = "ultrasonic_" + std::to_string(id);
-    range_msg.header.stamp = stamp;
-    range_msg.field_of_view = field_of_view_radian;
-    range_msg.max_range = max_range_m;
-    range_msg.min_range = min_range_m;
-    range_msg.range = range;
-    range_msg.radiation_type = Range::ULTRASOUND;
-    RangeSharedPtr range_ptr = std::make_shared<Range>(range_msg);
-    sensor_data_ptr_.at(id) = range_ptr;
-}
+    
 
-UltraSonicRadarDriver::UltraSonicRadarDriver()
-{
-    // get parameters
-    nh_.getParam("ultra_sonic_radar_driver_node/order", param_.order);
-    nh_.getParam("ultra_sonic_radar_driver_node/field_of_view_radian", param_.field_of_view_radian);
-    nh_.getParam("ultra_sonic_radar_driver_node/min_range_m", param_.min_range_m);
-    nh_.getParam("ultra_sonic_radar_driver_node/max_range_m", param_.max_range_m);
-
-    // subscriber
-    activate_radar_sub_ = nh_.subscribe("input/activate_radar", 1, &UltraSonicRadarDriver::activateRadarCallback, this);
-    can_frame_sub_ = nh_.subscribe("input/can_frame", 1, &UltraSonicRadarDriver::canFrameCallback, this);
-
-    // publisher
-    can_frame_pub_ = nh_.advertise<can_msgs::Frame>("output/can_frame", 1);
-    for (int i = 0; i < 8;i++)
+    void UltraSonicRadarDriver::canFrameCallback(const can_msgs::msg::Frame::ConstSharedPtr &msg)
     {
-        ros::Publisher ultra_sonic_range_pub;
-        ultra_sonic_range_pub = nh_.advertise<sensor_msgs::Range>("output/ultra_sonic_radar_"+std::to_string(i), 1);
-        ultra_sonic_range_pub_vector_.push_back(ultra_sonic_range_pub);
-        ultra_sonic_radar_data_.sensor_data_ptr_.push_back(RangeSharedPtr());
-    }
-
-    // timer
-    timer_ = nh_.createTimer(ros::Rate(10), &UltraSonicRadarDriver::timerCallback, this);
-
-    // activate
-    is_radar_activated_ = false;
-    is_received_radar_data_ = false;
-}
-
-UltraSonicRadarDriver::~UltraSonicRadarDriver()
-{
-
-}
-
-void UltraSonicRadarDriver::resetRadarData()
-{
-    for (int i = 0; i < 8;i++)
-    {
-        ultra_sonic_radar_data_.setRange(
-            param_.order.at(i), 1000.0, ros::Time::now(),
-            param_.field_of_view_radian.at(param_.order.at(i)), param_.min_range_m.at(param_.order.at(i)),
-            param_.max_range_m.at(param_.order.at(i)));
-    }
-    publishData();
-}
-
-void UltraSonicRadarDriver::activateRadar()
-{
-    can_msgs::Frame activate_message;
-    activate_message.header.stamp = ros::Time::now();
-    activate_message.dlc = 3;
-    activate_message.id = 0x601;
-    activate_message.data[0] = 0xb7;
-    activate_message.data[1] = 0x10;
-    activate_message.data[2] = 0xff;
-    can_frame_pub_.publish(activate_message);
-    is_radar_activated_ = true;
-    ROS_INFO("RADAR ACTIVATED");
-}
-
-void UltraSonicRadarDriver::deactivateRadar()
-{
-    can_msgs::Frame deactivate_message;
-    deactivate_message.header.stamp = ros::Time::now();
-    deactivate_message.dlc = 3;
-    deactivate_message.id = 0x601;
-    deactivate_message.data[0] = 0xb7;
-    deactivate_message.data[1] = 0x10;
-    deactivate_message.data[2] = 0x00;
-    can_frame_pub_.publish(deactivate_message);
-    is_radar_activated_ = false;
-    resetRadarData();
-    ROS_INFO("RADAR DEACTIVATED");
-}
-
-void UltraSonicRadarDriver::publishData()
-{
-    for (int i=0;i<8;i++)
-    {
-        ultra_sonic_range_pub_vector_.at(i).publish(
-            *ultra_sonic_radar_data_.sensor_data_ptr_.at(i));
-    }
-}
-
-void UltraSonicRadarDriver::activateRadarCallback(const std_msgs::BoolConstPtr &msg)
-{
-    if(msg->data)
-    {
-        activateRadar();
-        ROS_INFO("ACTIVATING ULTRASONIC RADAR");
-    }
-    else
-    {
-        deactivateRadar();
-        ROS_INFO("DEACTIVATING ULTRASONIC RADAR");
-    }
-}
-
-void UltraSonicRadarDriver::canFrameCallback(const can_msgs::FrameConstPtr &msg)
-{
-    if(msg->id==0x611) {
+        if(msg->id==0x611) {
         current_stamped_ = msg->header.stamp;
         ultra_sonic_radar_data_.setRange(
             param_.order.at(0), (dec2hex(msg->data.at(0))*100+dec2hex(msg->data.at(1)))/1000.0, msg->header.stamp,
@@ -192,17 +216,19 @@ void UltraSonicRadarDriver::canFrameCallback(const can_msgs::FrameConstPtr &msg)
             param_.order.at(7), (dec2hex(msg->data.at(6))*100+dec2hex(msg->data.at(7)))/1000.0, msg->header.stamp,
             param_.field_of_view_radian.at(param_.order.at(7)), param_.min_range_m.at(param_.order.at(7)),
             param_.max_range_m.at(param_.order.at(7)));
+        }
     }
-}
 
-void UltraSonicRadarDriver::timerCallback(const ros::TimerEvent &te)
-{
-    if((ros::Time::now()-current_stamped_).toSec()>TIME_OUT_SECOND||!is_radar_activated_)
+    void UltraSonicRadarDriver::timerCallback()
     {
-        ROS_ERROR_THROTTLE(5, "[ULTRA SONIC RADAR DRIVER] Please activate radar!");
-        return;
+        double timeout = (this->now()-current_stamped_).seconds();
+        if(timeout > TIME_OUT_SECOND||!is_radar_activated_)
+        {
+            rclcpp::Clock steady_clock(RCL_STEADY_TIME);
+            RCLCPP_ERROR_THROTTLE(this->get_logger(), steady_clock, 5, "[ULTRA SONIC RADAR DRIVER] Please activate radar![%f]",timeout);
+            return;
+        }
+        publishData();
     }
-    publishData();
+    
 }
-
-} // namespace ultra_sonic_radar_driver

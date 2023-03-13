@@ -1,0 +1,21 @@
+<launch>
+    <arg name="input_can_frame" default="/from_can_bus"/>
+    <arg name="output_can_frame" default="/to_can_bus"/>
+    <arg name="output_ultra_sonic_radar" default="/sensing/ultra_sonic_radar/ultra_sonic_radar"/>
+    
+    <node pkg="ultra_sonic_radar_driver" exec="ultra_sonic_radar_driver_node" name="ultra_sonic_radar_driver_node" output="screen">
+        <param from="$(find-pkg-share ultra_sonic_radar_driver)/config/config.param.yaml"/>
+        <remap from="/input/can_frame" to="$(var input_can_frame)"/>
+        <remap from="/output/can_frame" to="$(var output_can_frame)"/>
+        
+        <remap from="/input/activate_radar" to="/sensing/ultra_sonic_radar/activate_radar"/>
+        <remap from="/output/ultra_sonic_radar_0" to="$(var output_ultra_sonic_radar)_0"/>
+        <remap from="/output/ultra_sonic_radar_1" to="$(var output_ultra_sonic_radar)_1"/>
+        <remap from="/output/ultra_sonic_radar_2" to="$(var output_ultra_sonic_radar)_2"/>
+        <remap from="/output/ultra_sonic_radar_3" to="$(var output_ultra_sonic_radar)_3"/>
+        <remap from="/output/ultra_sonic_radar_4" to="$(var output_ultra_sonic_radar)_4"/>
+        <remap from="/output/ultra_sonic_radar_5" to="$(var output_ultra_sonic_radar)_5"/>
+        <remap from="/output/ultra_sonic_radar_6" to="$(var output_ultra_sonic_radar)_6"/>
+        <remap from="/output/ultra_sonic_radar_7" to="$(var output_ultra_sonic_radar)_7"/>
+    </node>
+</launch>

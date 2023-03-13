@@ -1,9 +1,9 @@
 /**
  * @file ultra_sonic_radar_driver.hpp
- * @author Mark Jin (mark@pixmoving.net)
+ * @author zumoude (zymouse@pixmoving.net)
  * @brief ultra sonic radar driver 
- * @version 0.9
- * @date 2022-11-30
+ * @version 1.0
+ * @date 2023-03-08
  * 
  * @copyright Copyright (c) 2022, Pixmoving
  * Rebuild The City With Autonomous Mobility
@@ -14,21 +14,21 @@
 #define __ULTRA_SONIC_RADAR_DRIVER__HPP__
 
 #include <vector>
+#include <iostream>
 
-#include "ros/ros.h"
+#include "rclcpp/rclcpp.hpp"
 
-#include <std_msgs/Bool.h>
-#include <sensor_msgs/Range.h>
-#include <can_msgs/Frame.h>
+#include "std_msgs/msg/bool.hpp"
+#include "sensor_msgs/msg/range.hpp"
+#include "can_msgs/msg/frame.hpp"
 
 #define NUMBER_OF_DETECTORS 8
 #define TIME_OUT_SECOND 1
 
 namespace ultra_sonic_radar_driver
 {
-
-typedef sensor_msgs::Range Range;
-typedef std::shared_ptr<sensor_msgs::Range> RangeSharedPtr;
+typedef sensor_msgs::msg::Range Range;
+typedef std::shared_ptr<sensor_msgs::msg::Range> RangeSharedPtr;
 
 /**
  * @brief convert hexadecimal data from Chen Mu radar to decimal type
@@ -62,12 +62,12 @@ struct UltraSonicRadarData
      * @param min_range_m min range(m) needs to be set
      * @param max_range_m max range(m) needs to be set
      */
-    void setRange(const size_t &id, const float &range, const ros::Time stamp,
+    void setRange(const size_t &id, const float &range, const rclcpp::Time stamp,
                   const float &field_of_view_radian, const float &min_range_m,
                   const float &max_range_m);
 };
 
-class UltraSonicRadarDriver
+class UltraSonicRadarDriver:public rclcpp::Node
 {
 private:
     Param param_;
@@ -77,11 +77,11 @@ private:
     bool is_radar_activated_;
     bool is_received_radar_data_;
 
-    ros::Time current_stamped_;
-    ros::Time prev_stamped_;
+    rclcpp::Time current_stamped_;
+    rclcpp::Time prev_stamped_;
 
 public:
-    UltraSonicRadarDriver(/* args */);
+    UltraSonicRadarDriver(std::string name);
     ~UltraSonicRadarDriver();
     /**
      * @brief reset ultrasonic radar data
@@ -108,34 +108,34 @@ public:
      *
      * @param msg
      */
-    void activateRadarCallback(const std_msgs::BoolConstPtr &msg);
+    void activateRadarCallback(const std_msgs::msg::Bool::ConstSharedPtr & msg);
     /**
      * @brief callback function to process canbus messages from can card driver,
      * in order to convert can frames to range msgs
      * 
      * @param msg 
      */
-    void canFrameCallback(const can_msgs::FrameConstPtr &msg);
+    void canFrameCallback(const can_msgs::msg::Frame::ConstSharedPtr & msg);
 
     /**
      * @brief timer callback
      * 
      * @param te 
      */
-    void timerCallback(const ros::TimerEvent &te);
+    void timerCallback();
 
-protected:
-    // node handler
-    ros::NodeHandle nh_;
-    // publisher
-    ros::Publisher can_frame_pub_;
-    std::vector<ros::Publisher> ultra_sonic_range_pub_vector_;
-    // subscriber
-    ros::Subscriber activate_radar_sub_;
-    ros::Subscriber can_frame_sub_;
-    // timer
-    ros::Timer timer_;
+    protected:
+    // publihser
+    rclcpp::Publisher<can_msgs::msg::Frame>::SharedPtr can_frame_pub_;                  // 超声波 配置信息 发布者
+    std::vector<rclcpp::Publisher<Range>::SharedPtr> ultra_sonic_range_pub_vector_;     // 单个超声波雷达 数据信息 发布者
+    // sublihser
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr activate_radar_sub_; // 超声波激活订阅者
+    rclcpp::Subscription<can_msgs::msg::Frame>::SharedPtr can_frame_sub_;     // can 信息
+
+    // Timer
+    rclcpp::TimerBase::SharedPtr timer_;
+
+
 };
-
 } // namespace ultra_sonic_radar_driver
 #endif
