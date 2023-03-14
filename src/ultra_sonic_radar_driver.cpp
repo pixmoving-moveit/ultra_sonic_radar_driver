@@ -82,21 +82,21 @@ namespace ultra_sonic_radar_driver
 
         // ros2 publisher
         can_frame_pub_ = this->create_publisher<can_msgs::msg::Frame>(
-            "/output/can_frame", 1);
+            "output/can_frame", 1);
 
         for(int i=0; i<8; i++){
             rclcpp::Publisher<Range>::SharedPtr ultra_sonic_range_pub;
-            ultra_sonic_range_pub = this->create_publisher<Range>("/output/ultra_sonic_radar_"+std::to_string(i), 1);
+            ultra_sonic_range_pub = this->create_publisher<Range>("output/ultra_sonic_radar_"+std::to_string(i), 1);
             ultra_sonic_range_pub_vector_.push_back(ultra_sonic_range_pub);
             ultra_sonic_radar_data_.sensor_data_ptr_.push_back(RangeSharedPtr());
         }
 
         // ros2 sublisher
         activate_radar_sub_ = this->create_subscription<std_msgs::msg::Bool>(
-            "/input/activate_radar", 1, std::bind(&UltraSonicRadarDriver::activateRadarCallback, this, std::placeholders::_1));
+            "input/activate_radar", 1, std::bind(&UltraSonicRadarDriver::activateRadarCallback, this, std::placeholders::_1));
 
         can_frame_sub_ = this->create_subscription<can_msgs::msg::Frame>(
-            "/input/can_frame", 1, std::bind(&UltraSonicRadarDriver::canFrameCallback, this, std::placeholders::_1)
+            "input/can_frame", 1, std::bind(&UltraSonicRadarDriver::canFrameCallback, this, std::placeholders::_1)
         );
 
         // ros2 Timer 10hz
