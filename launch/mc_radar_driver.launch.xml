@@ -1,7 +1,7 @@
 <launch>
     <arg name="input_can_frame" default="/from_can_bus"/>
     <arg name="output_can_frame" default="/to_can_bus"/>
-    <arg name="output_ultra_sonic_radar" default="ultra_sonic_radar/ultra_sonic_radar"/>
+    <arg name="output_ultra_sonic_radar" default="/sensing/ultra_sonic_radar/ultra_sonic_radar"/>
     
     <node pkg="ultra_sonic_radar_driver" exec="ultra_sonic_radar_driver_node" name="ultra_sonic_radar_driver_node" output="screen">
         <param from="$(find-pkg-share ultra_sonic_radar_driver)/config/config.param.yaml"/>

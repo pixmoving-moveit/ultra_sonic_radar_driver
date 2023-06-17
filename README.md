@@ -10,7 +10,7 @@ colcon build --symlink-install --packages-select ultra_sonic_radar_driver
 source install/setup.bash 
 ros2 launch ultra_sonic_radar_driver mc_radar_driver.launch.xml 
 # 3.0 激活
-ros2 topic pub -1 /input/activate_radar std_msgs/msg/Bool data:\ True\ 
+ros2 topic pub -1 /sensing/ultra_sonic_radar/activate_radar std_msgs/msg/Bool "{data: True}"
 ```
 # 配置文件 - config.param.yaml
 ```yaml

@@ -44,6 +44,7 @@ struct Param
     std::vector<double> field_of_view_radian;
     std::vector<double> min_range_m;
     std::vector<double> max_range_m;
+    uint8_t ultrasonic_number;
 };
 
 struct UltraSonicRadarData
