@@ -82,12 +82,15 @@ namespace ultra_sonic_radar_driver
             2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0});
       std::vector<double> max_range_m_v(max_range_m.begin(), max_range_m.end());
       param_.max_range_m = max_range_m_v;
-
+      
+      MC_INFO << "ultrasonic_number:" << (int)param_.ultrasonic_number <<  MC_END;
+      
       // ros2 publisher
       can_frame_pub_ = this->create_publisher<can_msgs::msg::Frame>(
         "output/can_frame", 1);
 
       for(int i=0; i<param_.ultrasonic_number; i++){
+
         rclcpp::Publisher<Range>::SharedPtr ultra_sonic_range_pub;
         ultra_sonic_range_pub = this->create_publisher<Range>("output/ultra_sonic_radar_"+std::to_string(i), 1);
         ultra_sonic_range_pub_vector_.push_back(ultra_sonic_range_pub);

@@ -22,6 +22,8 @@
 #include "sensor_msgs/msg/range.hpp"
 #include "can_msgs/msg/frame.hpp"
 
+#include "mc_log.hpp"
+
 #define NUMBER_OF_DETECTORS 8
 #define TIME_OUT_SECOND 1
 
