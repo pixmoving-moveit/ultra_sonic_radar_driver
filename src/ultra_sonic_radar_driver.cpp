@@ -107,7 +107,7 @@ namespace ultra_sonic_radar_driver
 
       // ros2 Timer 10hz
       timer_ = this->create_wall_timer(
-        std::chrono::milliseconds(500), std::bind(&UltraSonicRadarDriver::timerCallback, this));
+        std::chrono::milliseconds(100), std::bind(&UltraSonicRadarDriver::timerCallback, this));
 
       // activate
       is_radar_activated_ = false;
