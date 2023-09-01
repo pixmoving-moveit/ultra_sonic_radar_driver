@@ -42,11 +42,12 @@ int dec2hex(uint8_t dec);
 
 struct Param
 {
+    uint8_t ultrasonic_number;
+    std::vector<int> activate_list;
     std::vector<int> order;
     std::vector<double> field_of_view_radian;
     std::vector<double> min_range_m;
     std::vector<double> max_range_m;
-    uint8_t ultrasonic_number;
 };
 
 struct UltraSonicRadarData

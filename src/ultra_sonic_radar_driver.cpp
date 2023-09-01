@@ -59,6 +59,12 @@ namespace ultra_sonic_radar_driver
       param_.ultrasonic_number = this->declare_parameter(
         "ultrasonic_number", 8);
 
+      auto activate_list = declare_parameter(
+        "activate_list", std::vector<int>{
+            0xb7, 0x1f});
+      std::vector<int> activate_list_v(activate_list.begin(), activate_list.end());
+      param_.activate_list = activate_list_v;
+      
       auto order = declare_parameter(
         "order", std::vector<int>{
             0, 1, 2, 3, 4, 5, 6, 7});
@@ -153,8 +159,8 @@ namespace ultra_sonic_radar_driver
       activate_message.header.stamp = this->now();
       activate_message.dlc = 3;
       activate_message.id = 0x601;
-      activate_message.data[0] = 0xb7;
-      activate_message.data[1] = 0x10;
+      activate_message.data[0] = param_.activate_list[0];
+      activate_message.data[1] = param_.activate_list[1];
       activate_message.data[2] = 0xff;
       can_frame_pub_->publish(activate_message);
       is_radar_activated_ = true;
@@ -166,8 +172,8 @@ namespace ultra_sonic_radar_driver
       deactivate_message.header.stamp = this->now();
       deactivate_message.dlc = 3;
       deactivate_message.id = 0x601;
-      deactivate_message.data[0] = 0xb7;
-      deactivate_message.data[1] = 0x10;
+      deactivate_message.data[0] = param_.activate_list[0];
+      deactivate_message.data[1] = param_.activate_list[1];
       deactivate_message.data[2] = 0x00;
       can_frame_pub_->publish(deactivate_message);
       is_radar_activated_ = false;
