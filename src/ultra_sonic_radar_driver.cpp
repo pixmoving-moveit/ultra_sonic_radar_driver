@@ -98,7 +98,7 @@ namespace ultra_sonic_radar_driver
       for(int i=0; i<param_.ultrasonic_number; i++){
 
         rclcpp::Publisher<Range>::SharedPtr ultra_sonic_range_pub;
-        ultra_sonic_range_pub = this->create_publisher<Range>("output/ultra_sonic_radar_"+std::to_string(i), 1);
+        ultra_sonic_range_pub = this->create_publisher<Range>("output/ultra_sonic_radar_"+std::to_string(i), rclcpp::SensorDataQoS());
         ultra_sonic_range_pub_vector_.push_back(ultra_sonic_range_pub);
         ultra_sonic_radar_data_.sensor_data_ptr_.push_back(RangeSharedPtr());
       }
@@ -111,9 +111,11 @@ namespace ultra_sonic_radar_driver
         "input/can_frame", 1, std::bind(&UltraSonicRadarDriver::canFrameCallback, this, std::placeholders::_1)
       );
 
-      // ros2 Timer 10hz
+      // int hz = 10; // 10hz
+      int hz = 66; // 15hz
+      // ros2 Timer 
       timer_ = this->create_wall_timer(
-        std::chrono::milliseconds(100), std::bind(&UltraSonicRadarDriver::timerCallback, this));
+        std::chrono::milliseconds(hz), std::bind(&UltraSonicRadarDriver::timerCallback, this));
 
       // activate
       is_radar_activated_ = false;
