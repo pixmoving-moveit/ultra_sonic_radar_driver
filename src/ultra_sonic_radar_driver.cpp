@@ -256,9 +256,8 @@ namespace ultra_sonic_radar_driver
       double timeout = (this->now()-current_stamped_).seconds();
       if(timeout > TIME_OUT_SECOND||!is_radar_activated_)
       {
-          rclcpp::Clock steady_clock(RCL_STEADY_TIME);
-          RCLCPP_ERROR_THROTTLE(this->get_logger(), steady_clock, 5, "[ULTRA SONIC RADAR DRIVER] Please activate radar![%f]",timeout);
-          return;
+        RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 1000*5, "[ULTRA SONIC RADAR DRIVER] Please activate radar![%f]",timeout);
+        return;
       }
       publishData();
   }
