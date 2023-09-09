@@ -7,19 +7,32 @@
 #
 #   2     3
 
-# order demostration - 12
-#   0 1 3 4 
+
+# hardware serial number
+#    1 2 3 4
 #
-# 8   / \   10
-#      |
-# 9    |    11
+#  5   / \   6
+#       |
+# 11    |    12
 #
-#  4 5 6 7
+#    7 8 9 10
+
+# topic serial number
+#    0 1 2 3
+#
+#  4   / \   6
+#       |
+#  5    |    7
+#
+#    8 9 10 11
+
 /**:
   ros__parameters:
     ultrasonic_number: 12
-    activate_list: [0xb7, 0x1f]
-    order: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]                                 # order of detector 
+    activate_list: [0xb1, 0x1f]
+# hardware: 1  2  3  4  5  6   7  8   9  10 11 12 
+# topic:    0, 1, 2, 3, 4, 6,  8, 9, 10, 11, 5, 7 
+    order: [0, 1, 2, 3, 4, 6,  8, 9, 10, 11, 5, 7]                               # topic name number 
     field_of_view_radian: [0.52, 0.52, 0.52, 0.52, 0.52, 0.52, 0.52, 0.52, 0.52, 0.52, 0.52, 0.52] # radians
     min_range_m: [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2]             # m
     max_range_m: [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]             # m
