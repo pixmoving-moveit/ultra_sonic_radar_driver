@@ -230,7 +230,7 @@ namespace ultra_sonic_radar_driver
         param_.order.at(7), (dec2hex(msg->data.at(6))*100+dec2hex(msg->data.at(7)))/1000.0, msg->header.stamp,
         param_.field_of_view_radian.at(param_.order.at(7)), param_.min_range_m.at(param_.order.at(7)),
         param_.max_range_m.at(param_.order.at(7)));
-    }else if (msg->id == 0x613) {
+    }else if (msg->id == 0x613 && param_.ultrasonic_number == 12) {
       ultra_sonic_radar_data_.setRange(
         param_.order.at(8), (dec2hex(msg->data.at(0))*100+dec2hex(msg->data.at(1)))/1000.0, msg->header.stamp,
         param_.field_of_view_radian.at(param_.order.at(8)), param_.min_range_m.at(param_.order.at(4)),
