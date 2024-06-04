@@ -28,11 +28,11 @@
 
 /**:
   ros__parameters:
-    ultrasonic_number: 12
+    ultrasonic_number: 8
     activate_list: [0xb1, 0x1f]
 # hardware: 1  2  3  4  5  6   7  8   9  10 11 12 
-# topic:    0, 1, 2, 3, 4, 6,  8, 9, 10, 11, 5, 7 
-    order: [0, 1, 2, 3, 4, 6,  8, 9, 10, 11, 5, 7]                               # topic name number 
-    field_of_view_radian: [0.52, 0.52, 0.52, 0.52, 0.52, 0.52, 0.52, 0.52, 0.52, 0.52, 0.52, 0.52] # radians
-    min_range_m: [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2]             # m
-    max_range_m: [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]             # m
+# topic:    0, 1, 2, 3, 4, 5, 6, 7 
+    order: [0, 1, 2, 3, 4, 5, 6, 7]                               # topic name number 
+    field_of_view_radian: [0.52, 0.52, 0.52, 0.52, 0.52, 0.52, 0.52, 0.52] # radians
+    min_range_m: [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2]             # m
+    max_range_m: [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]             # m
