@@ -11,7 +11,7 @@ source install/setup.bash
 ros2 launch ultra_sonic_radar_driver mc_radar_driver.launch.xml
 #3.0 启动can驱动
 ros2 launch  ros2_socketcan socket_can_bridge.launch.xml
-# 3.0 激活(注意激活话题：可通过ros2 topic list查看)
+# 4.0 激活(注意激活话题：可通过ros2 topic list查看)
 ros2 topic pub -1 /sensing/ultra_sonic_radar/activate_radar std_msgs/msg/Bool "{data: True}"
 ```
 # 配置文件 - config.param.yaml
