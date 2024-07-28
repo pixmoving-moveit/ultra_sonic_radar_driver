@@ -58,18 +58,18 @@ struct UltrasonicConfigureParam
   inline void setMode10() {
     work_mode[0] = 0x10;
     work_mode[1] = 0x00;
-    RCLCPP_INFO(rclcpp::get_logger("UltrasonicConfigureParam"), "输入-停用超声波");
+    RCLCPP_INFO(rclcpp::get_logger("UltrasonicConfigureParam"), "输入-停用超声波配置");
   }
 
   inline void setMode1F() {
     work_mode[0] = 0x1f;
     work_mode[1] = 0xff;
-    RCLCPP_INFO(rclcpp::get_logger("UltrasonicConfigureParam"), "输入-激活超声波");
+    RCLCPP_INFO(rclcpp::get_logger("UltrasonicConfigureParam"), "输入-激活超声波配置");
   }
 
   inline void show() const {
     RCLCPP_INFO_STREAM(rclcpp::get_logger("UltrasonicConfigureParam"), 
-      "超声"
+      "超声波配置信息: "
       << "\nrate: " 
       << (int)rate
       << "\ndistance_measurement_mode: "

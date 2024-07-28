@@ -108,7 +108,7 @@ UltraSonicRadarDriver::UltraSonicRadarDriver(std::string name):Node(name)
   // ros2 Timer 
   timer_rate_ = 10; 
   timer_ = this->create_wall_timer(
-    std::chrono::milliseconds(timer_rate_*1000), std::bind(&UltraSonicRadarDriver::timerCallback, this));
+    std::chrono::milliseconds(1000/timer_rate_), std::bind(&UltraSonicRadarDriver::timerCallback, this));
   
 }
 
@@ -120,14 +120,14 @@ void UltraSonicRadarDriver::canFrameCallback(const can_msgs::msg::Frame::ConstSh
 {
   if(msg->id==0x611  && param_.ultrasonic_number >= 4) {
     // 获取0x611 aa aa aa aa bb bb bb bb 
-    for(size_t index = 0; index>4; index++){
+    for(size_t index = 0; index<4; index++){
        
       ultra_sonic_radar_data_.setRangeMsg(
       param_.order.at(index), 
       (
         dec2hex(msg->data.at(index*2))*100
         +
-        dec2hex(msg->data.at((index+1)*2))
+        dec2hex(msg->data.at(index*2+1))
       )/1000.0, 
       msg->header.stamp);
 
@@ -136,34 +136,34 @@ void UltraSonicRadarDriver::canFrameCallback(const can_msgs::msg::Frame::ConstSh
 
  
   }else if (msg->id == 0x612 && param_.ultrasonic_number >= 8) {
-    for(size_t index = 0; index>4; index++){
+    for(size_t index = 0; index<4; index++){
        
       ultra_sonic_radar_data_.setRangeMsg(
-      param_.order.at(index), 
+      param_.order.at(index+4), 
       (
         dec2hex(msg->data.at(index*2))*100  // 0xaabb 获取高字节aa
         +
-        dec2hex(msg->data.at((index+1)*2)) // 0xaabb 获取高字节bb
+        dec2hex(msg->data.at(index*2+1)) // 0xaabb 获取高字节bb
       )/1000.0, 
       msg->header.stamp);
       // 发布话题
-      ultra_sonic_range_pub_vector_.at(index)->publish(ultra_sonic_radar_data_.sensor_data_.at(index));
+      ultra_sonic_range_pub_vector_.at(index+4)->publish(ultra_sonic_radar_data_.sensor_data_.at(index+4));
 
     }
     
   }else if (msg->id == 0x613 && param_.ultrasonic_number >= 12) {
-    for(size_t index = 0; index>4; index++){
+    for(size_t index = 0; index<4; index++){
        
       ultra_sonic_radar_data_.setRangeMsg(
-      param_.order.at(index), 
+      param_.order.at(index+8), 
       (
         dec2hex(msg->data.at(index*2))*100
         +
-        dec2hex(msg->data.at((index+1)*2))
+        dec2hex(msg->data.at(index*2+1))
       )/1000.0, 
       msg->header.stamp);
 
-      ultra_sonic_range_pub_vector_.at(index)->publish(ultra_sonic_radar_data_.sensor_data_.at(index));
+      ultra_sonic_range_pub_vector_.at(index+8)->publish(ultra_sonic_radar_data_.sensor_data_.at(index+8));
     }
   }
   
@@ -174,7 +174,7 @@ void UltraSonicRadarDriver::timerCallback()
   // 奇数指令,且让超声波开始工作，循环发送配置到超声波
   if (configure_radar_.distance_measurement_mode % 2 == 0 
       && configure_radar_.work_mode[0] == 0x1f
-      && configure_radar_.work_mode[0] == 0xff){
+      && configure_radar_.work_mode[1] == 0xff){
     // 偶数 发一次返回一次
     can_frame_pub_->publish(configure_info_);
   }
@@ -225,7 +225,7 @@ void UltraSonicRadarDriver::configureRadarCallback(const std_msgs::msg::UInt8Mul
 
       timer_rate_ = configure_radar_.rate; 
       timer_ = this->create_wall_timer(
-        std::chrono::milliseconds(timer_rate_*1000), 
+        std::chrono::milliseconds(1000/timer_rate_), 
         std::bind(&UltraSonicRadarDriver::timerCallback, 
         this));
     }

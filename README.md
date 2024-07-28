@@ -1,17 +1,6 @@
 # 介绍
-- 8探头超声波 F40-16TR
-- 
-# 如何使用
+- 8-12探头超声波 F40-16TR
 
-```bash
-# 1.0 编译
-colcon build --symlink-install --packages-select ultra_sonic_radar_driver
-# 2.0 运行
-source install/setup.bash 
-ros2 launch ultra_sonic_radar_driver mc_radar_driver.launch.xml 
-# 3.0 激活
-ros2 topic pub -1 /sensing/ultra_sonic_radar/activate_radar std_msgs/msg/Bool "{data: True}"
-```
 # 配置文件 - config.param.yaml
 ```yaml
 order: [0, 1, 2, 3, 4, 5, 6, 7]                                 # order of detector 
@@ -42,3 +31,52 @@ max_range_m: [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]             # m
 注意点：至于探头的序号，根据超声波银色盒子标记(标记1对应0号探头)
 ## field_of_view_radian 字段
 ![](./docs/ultrasonic_FOV.jpg)
+
+
+# 如何使用
+
+## step-1 确保可以收到超声波can信息
+
+```bash
+# 0.5s一次的频率，发送b81fff, b8属于偶数，发一次超声波回复一次超声波数据
+# while true; do cansend can1 601#b81fff; sleep 0.5; done
+
+# 发送b71fff, b7属于奇数, 不间断返回数据
+cansend can1 601#b81fff
+
+# 查看超声波第1-4号探头数据
+candump can1,611:7ff
+```
+
+## step-2 启动超声波
+
+```bash
+# 1.0 编译
+colcon build --symlink-install --packages-select ultra_sonic_radar_driver
+# 2.0 运行
+source install/setup.bash 
+ros2 launch ultra_sonic_radar_driver mc_radar_driver.launch.xml 
+```
+
+
+## step-2 设置超声波(可选)
+
+> (可选) 默认模式是10hz 0xb1, 0x1f 0xff,需要修改工作方式和频率请执行下面命令
+
+```bash
+# 3.0 设置配置
+ros2 run ultra_sonic_radar_driver configure_radar.sh <config_topic> <pub_rate> <work_mode>
+```
+- config_topic: 配置的话题
+- pub_rate: 超声波的配置，0x601的发布频率
+- work_mode: 超声波的工作模式, 不同的测距模式
+
+例如: 
+
+```bash
+ros2 run ultra_sonic_radar_driver configure_radar.sh \
+  /sensing/ultra_sonic_radar/activate_radar/input/configure_radar \
+  20 \
+  b2
+```
+

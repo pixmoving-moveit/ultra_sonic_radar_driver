@@ -22,6 +22,15 @@ ament_auto_add_executable(ultra_sonic_radar_driver_node
 )
 
 # install
+
+install(
+  PROGRAMS
+  test/configure_radar.sh
+  test/simulate_can_send.sh
+  DESTINATION 
+  lib/${PROJECT_NAME}
+)
+
 ament_auto_package(
   INSTALL_TO_SHARE
   launch
