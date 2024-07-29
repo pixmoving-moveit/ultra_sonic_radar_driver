@@ -187,7 +187,7 @@ void UltraSonicRadarDriver::configureRadarCallback(const std_msgs::msg::UInt8Mul
 
   if(msg->data.size()==3 
     && 10<=msg->data[0] 
-    && msg->data[0]<=20
+    && msg->data[0]<=50
 
     && 0xb1<=msg->data[1] 
     && msg->data[1]<=0xba
