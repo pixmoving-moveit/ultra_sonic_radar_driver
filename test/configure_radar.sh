@@ -7,8 +7,8 @@
 
 rate=${2:-20}
 distance_measurement_mode=${3:-0xb2}
-work_mode=1
-ros2 topic pub -1 ${1:-/input/configure_radar} std_msgs/msg/UInt8MultiArray "
+work_mode=${4:-1}
+ros2 topic pub -1 ${1:-/input/configure_radar} std_msgs/msg/Float32MultiArray "
 {
 layout:{
   dim: [],

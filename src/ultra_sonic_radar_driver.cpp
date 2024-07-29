@@ -102,7 +102,7 @@ UltraSonicRadarDriver::UltraSonicRadarDriver(std::string name):Node(name)
     "input/can_frame", 1, std::bind(&UltraSonicRadarDriver::canFrameCallback, this, std::placeholders::_1)
   );
 
-  configure_radar_sub_ = this->create_subscription<std_msgs::msg::UInt8MultiArray>(
+  configure_radar_sub_ = this->create_subscription<std_msgs::msg::Float32MultiArray>(
     "input/configure_radar", 1, std::bind(&UltraSonicRadarDriver::configureRadarCallback, this, std::placeholders::_1));
 
   // ros2 Timer 
@@ -181,22 +181,23 @@ void UltraSonicRadarDriver::timerCallback()
   
 }
 
-void UltraSonicRadarDriver::configureRadarCallback(const std_msgs::msg::UInt8MultiArray::ConstSharedPtr & msg)
+void UltraSonicRadarDriver::configureRadarCallback(const std_msgs::msg::Float32MultiArray::ConstSharedPtr & msg)
 {
   RCLCPP_INFO(this->get_logger(), "开始配置超声波");
 
   if(msg->data.size()==3 
-    && 10<=msg->data[0] 
-    && msg->data[0]<=50
+    && 10.0<=msg->data[0] 
+    && msg->data[0]<20.0
 
     && 0xb1<=msg->data[1] 
     && msg->data[1]<=0xba
 
-    && msg->data[2]<=1){
+    && 0.0 <= msg->data[2]
+    && msg->data[2]<=1.0){
     
     // 存储传入的超声波设置信息
-    configure_radar_.rate = msg->data[0];
-    configure_radar_.distance_measurement_mode = msg->data[1];
+    configure_radar_.rate = static_cast<uint8_t>(msg->data[0]);
+    configure_radar_.distance_measurement_mode = static_cast<uint8_t>(msg->data[1]);
     if(static_cast<bool>(msg->data[2])){
       configure_radar_.setMode1F();
     }else{

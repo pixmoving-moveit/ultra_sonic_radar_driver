@@ -52,8 +52,8 @@ candump can1,611:7ff
 > 技术指令 就是偶数指令，发一次返回一次
 
 ```bash
-# 20hz
-while true; do cansend can1 601#b21fff; sleep 0.05; done
+# 20hz,注意需要发布频率大于0.05s,探头的返回频率才能稳定，否则不稳定
+while true; do cansend can1 601#b21fff; sleep 0.051; done
 
 # 查看两帧之间时间戳，单位s
 
@@ -89,12 +89,13 @@ ros2 run ultra_sonic_radar_driver configure_radar.sh <config_topic> <pub_rate> <
 - pub_rate: 超声波的配置，0x601的发布频率
 - work_mode: 超声波的工作模式, 不同的测距模式
 
-例如: 
+例如: 按照20hz启动超声波
 
 ```bash
 ros2 run ultra_sonic_radar_driver configure_radar.sh \
   /sensing/ultra_sonic_radar/activate_radar/input/configure_radar \
-  20 \
-  0xb2 
+  19.9 \
+  0xb2 \
+  1
 ```
 

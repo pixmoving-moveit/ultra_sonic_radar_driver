@@ -19,7 +19,7 @@
 #include "rclcpp/rclcpp.hpp"
 
 #include "std_msgs/msg/bool.hpp"
-#include "std_msgs/msg/u_int8_multi_array.hpp"
+#include "std_msgs/msg/float32_multi_array.hpp"
 #include "sensor_msgs/msg/range.hpp"
 #include "can_msgs/msg/frame.hpp"
 
@@ -133,11 +133,11 @@ protected:
   /**
    *  msg[0]: 超声波的发布频率
    *  msg[1]: 超声波测距模式
-   *  msg[2]: 超声波探头是否工作 1 所有探头都工作 0 所有探头都不工作 
+   *  msg[2]: 超声波探头是否工作 1.0 所有探头都工作 0.0 所有探头都不工作 
    */ 
-  rclcpp::Subscription<std_msgs::msg::UInt8MultiArray>::SharedPtr configure_radar_sub_; // 超声波激活订阅者
+  rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr configure_radar_sub_; // 超声波激活订阅者
   /// @brief 处理激活/停用消息的回调函数
-  void configureRadarCallback(const std_msgs::msg::UInt8MultiArray::ConstSharedPtr & msg);
+  void configureRadarCallback(const std_msgs::msg::Float32MultiArray::ConstSharedPtr & msg);
   UltrasonicConfigureParam configure_radar_;
   can_msgs::msg::Frame configure_info_;
   
