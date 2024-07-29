@@ -35,11 +35,10 @@ max_range_m: [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]             # m
 
 # 如何使用
 
-## step-1 确保可以收到超声波can信息
+## step-1 确保超声波探头的can信息 可以收到
 
 ```bash
 # 0.5s一次的频率，发送b81fff, b8属于偶数，发一次超声波回复一次超声波数据
-# while true; do cansend can1 601#b81fff; sleep 0.5; done
 
 # 发送b71fff, b7属于奇数, 不间断返回数据
 cansend can1 601#b11fff
@@ -48,7 +47,26 @@ cansend can1 601#b11fff
 candump can1,611:7ff
 ```
 
-## step-2 启动超声波
+## step-2 确保超声波技术指令生效
+
+> 技术指令 就是偶数指令，发一次返回一次
+
+```bash
+# 20hz
+while true; do cansend can1 601#b21fff; sleep 0.05; done
+
+# 查看两帧之间时间戳，单位s
+
+# 查看601, 是否在0.05左右
+candump -t d can1,601:7ff
+# 查看611, 是否在0.05左右
+candump -t d can1,611:7ff
+
+```
+
+
+
+## step-3 启动超声波
 
 ```bash
 # 1.0 编译
