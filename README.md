@@ -42,7 +42,7 @@ max_range_m: [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]             # m
 # while true; do cansend can1 601#b81fff; sleep 0.5; done
 
 # 发送b71fff, b7属于奇数, 不间断返回数据
-cansend can1 601#b81fff
+cansend can1 601#b11fff
 
 # 查看超声波第1-4号探头数据
 candump can1,611:7ff
@@ -77,6 +77,6 @@ ros2 run ultra_sonic_radar_driver configure_radar.sh <config_topic> <pub_rate> <
 ros2 run ultra_sonic_radar_driver configure_radar.sh \
   /sensing/ultra_sonic_radar/activate_radar/input/configure_radar \
   20 \
-  b2
+  0xb2 
 ```
 

@@ -3,6 +3,9 @@
     <arg name="output_can_frame" default="/to_can1_bus"/>
     <arg name="output_ultra_sonic_radar" default="chenmu/ultra_sonic_radar"/>
     
+    
+    <group>
+    <push-ros-namespace namespace="/sensing/ultra_sonic_radar/activate_radar"/>
     <node pkg="ultra_sonic_radar_driver" exec="ultra_sonic_radar_driver_node" name="ultra_sonic_radar_driver_node" output="screen">
         <param from="$(find-pkg-share ultra_sonic_radar_driver)/config/config.param.yaml"/>
         <remap from="input/can_frame" to="$(var input_can_frame)"/>
@@ -25,4 +28,5 @@
         <remap from="output/ultra_sonic_radar_11" to="$(var output_ultra_sonic_radar)_11"/>
 
     </node>
+    </group>
 </launch>
