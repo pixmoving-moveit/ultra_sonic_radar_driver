@@ -65,7 +65,6 @@ candump -t d can1,611:7ff
 ```
 
 
-
 ## step-3 启动超声波
 
 ```bash
@@ -89,11 +88,12 @@ ros2 run ultra_sonic_radar_driver configure_radar.sh <config_topic> <pub_rate> <
 - pub_rate: 超声波的配置，0x601的发布频率
 - work_mode: 超声波的工作模式, 不同的测距模式
 
-例如: 按照20hz启动超声波
+例如: 按照19hz启动超声波
 
 ```bash
+# 按照19hz，发布超声波数据
 ros2 run ultra_sonic_radar_driver configure_radar.sh \
-  /sensing/ultra_sonic_radar/activate_radar/input/configure_radar \
+  /sensing/ultra_sonic_radar/activate_radar \
   19.9 \
   0xb2 \
   1
